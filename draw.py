@@ -27,6 +27,10 @@ __fill = ''
 __rectangle_modes = [CORNER, CORNERS, CENTER, RADIUS]
 __rectangle_mode = CORNER
 
+# RECTANGLE VARIABLES
+__ellipse_modes = [CORNER, CORNERS, CENTER, RADIUS]
+__ellipse_mode = CORNER
+
 #
 #   CANVAS FUNTIONS
 #
@@ -112,10 +116,7 @@ def stroke_width(w):
 
 def fill(x, y=None, z=None):
     global __fill
-    if x is None:
-        __fill = ''
-    else:
-        __fill = color(x, y, z)
+    __fill = color(x, y, z)
 
 #
 #   LINE FUNCTIONS
@@ -139,18 +140,17 @@ def line(x1, y1, x2, y2):
 
 # Draws a rectangle based on the current rectangle mode
 def rectangle(x1, y1, x2, y2):
-    global __fill, __rectangle_mode
-    if __rectangle_mode == 'CORNER':
+    if __rectangle_mode == CORNER:
         a = x1 + __x_offset
         b = y1 + __y_offset
         c = x1 + x2 + __x_offset
         d = y1 + y2 + __y_offset
-    elif __rectangle_mode == 'CORNERS':
+    elif __rectangle_mode == CORNERS:
         a = x1 + __x_offset
         b = y1 + __y_offset
         c = x2 + __x_offset
         d = y2 + __y_offset
-    elif __rectangle_mode == 'CENTER':
+    elif __rectangle_mode == CENTER:
         a = x1 - x2 / 2 + __x_offset
         b = y1 - y2 / 2 + __y_offset
         c = x1 + x2 / 2 + __x_offset
@@ -169,6 +169,35 @@ def rectangle_mode(mode):
     if mode not in __rectangle_modes:
         return
     __rectangle_mode = mode
+
+#
+#   ELLIPSE FUNCTIONS
+#
+
+def ellipse(x1, y1, x2, y2):
+    if __ellipse_mode == CORNER:
+        a = x1 + __x_offset
+        b = y1 + __y_offset
+        c = x2 + x1 + __x_offset
+        d = y2 + y1 + __y_offset
+    elif __ellipse_mode == CORNERS:
+        a = x1 + __x_offset
+        b = x2 + __y_offset
+        c = y1 + __x_offset
+        d = y2 + __y_offset
+    elif __ellipse_mode == CENTER:
+        a = x1 - x2 / 2 + __x_offset
+        b = y1 - y2 / 2 + __y_offset
+        c = x1 + x2 / 2 + __x_offset
+        d = y1 + y2 / 2 + __y_offset
+    __canvas.create_oval(a, b, c, d, fill=__fill,
+                              outline=__stroke, width=__stroke_width)
+
+def ellipse_mode(mode):
+    global __ellipse_mode, __ellipse_modes
+    if mode not in __ellipse_modes:
+        return
+    __ellipse_mode = mode
 
 #
 #   MODULE FUNCTIONS
