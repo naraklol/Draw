@@ -2,11 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import tkinter
+import time
+import sys
 from macros import *
 
 # CANVAS VARIABLES
 __canvas = None
 __root = None
+__frame_start_time = 0
+__frame_rate = 60
 WIDTH = 400
 HEIGHT = 400
 
@@ -27,9 +31,9 @@ __fill = ''
 __rectangle_modes = [CORNER, CORNERS, CENTER, RADIUS]
 __rectangle_mode = CORNER
 
-# RECTANGLE VARIABLES
+# CIRCLE VARIABLES
 __ellipse_modes = [CORNER, CORNERS, CENTER, RADIUS]
-__ellipse_mode = CORNER
+__ellipse_mode = CENTER
 
 #
 #   CANVAS FUNTIONS
@@ -42,13 +46,13 @@ def create_window(title='Window'):
     __root.title(title)
 
 # Create a new canvas object and set the height/width
-def create_canvas(w=400, h=400):
+def create_canvas(w, h):
     global HEIGHT
     global WIDTH
     global __canvas
-    __canvas = tkinter.Canvas(__root, width=w, height=h, bg='WHITE')
     WIDTH = w
     HEIGHT = h
+    __canvas = tkinter.Canvas(__root, width=WIDTH, height=HEIGHT, bg='WHITE')
     __canvas.pack()
 
 # Sets the background to a color
@@ -57,11 +61,17 @@ def set_background(x, y=None, z=None):
 
 # Refreshes the canvas (by deleting all the elements)
 def refresh_canvas():
-    __canvas.delete('all')
+    global __frame_start_time
+    __frame_start_time = time.time()
+    try:
+        __canvas.delete('all')
+    except:
+        sys.exit(1)
 
 # Updates the canvas with newly added elements
 def update_canvas():
     __root.update()
+    time.sleep(max(1./__frame_rate - (time.time() - __frame_start_time), 0))
 
 # Returns the Tkinter canvas object
 def get_canvas():
@@ -77,6 +87,11 @@ def translate(x, y):
     global __y_offset
     __x_offset = x
     __y_offset = y
+
+# Sets the framerate for the project
+def frame_rate(f):
+    global __frame_rate
+    __frame_rate = f
 
 #
 #   COLOR FUNCTIONS
@@ -101,7 +116,7 @@ def color_mode(mode):
     __color_mode = mode
 
 #
-#   STROKE/FILL FUNNCTIONS
+#   ATTRIBUTE FUNCTIONS
 #
 
 # Sets the color of a stroke (line or outline)
@@ -118,8 +133,24 @@ def fill(x, y=None, z=None):
     global __fill
     __fill = color(x, y, z)
 
+# Sets the current rectangle mode
+# CORNER  -> x1,y1 - starting point | x2 - width | y2 - height
+# CORNERS -> x1,y1 - starting point | x2,y2 ending point
+# CENTER  -> x1,y1 - center of rectangle | x2 - width | y2 - height
+def rectangle_mode(mode):
+    global __rectangle_mode, __rectangle_modes
+    if mode not in __rectangle_modes:
+        return
+    __rectangle_mode = mode
+
+def ellipse_mode(mode):
+    global __ellipse_mode, __ellipse_modes
+    if mode not in __ellipse_modes:
+        return
+    __ellipse_mode = mode
+
 #
-#   LINE FUNCTIONS
+#   SHAPE FUNCTIONS
 #
 
 # Draws a line from x1,y1 to x2,y2
@@ -133,10 +164,6 @@ def line(x1, y1, x2, y2):
 
     # draw the line
     __canvas.create_line(x1, y1, x2, y2, fill=__stroke, width=__stroke_width)
-
-#
-#   RECTANGLE FUNCTIONS
-#
 
 # Draws a rectangle based on the current rectangle mode
 def rectangle(x1, y1, x2, y2):
@@ -160,20 +187,6 @@ def rectangle(x1, y1, x2, y2):
     __canvas.create_rectangle(a, b, c, d, fill=__fill,
                               outline=__stroke, width=__stroke_width)
 
-# Sets the current rectangle mode
-# CORNER  -> x1,y1 - starting point | x2 - width | y2 - height
-# CORNERS -> x1,y1 - starting point | x2,y2 ending point
-# CENTER  -> x1,y1 - center of rectangle | x2 - width | y2 - height
-def rectangle_mode(mode):
-    global __rectangle_mode, __rectangle_modes
-    if mode not in __rectangle_modes:
-        return
-    __rectangle_mode = mode
-
-#
-#   ELLIPSE FUNCTIONS
-#
-
 def ellipse(x1, y1, x2, y2):
     if __ellipse_mode == CORNER:
         a = x1 + __x_offset
@@ -193,12 +206,12 @@ def ellipse(x1, y1, x2, y2):
     __canvas.create_oval(a, b, c, d, fill=__fill,
                               outline=__stroke, width=__stroke_width)
 
-def ellipse_mode(mode):
-    global __ellipse_mode, __ellipse_modes
-    if mode not in __ellipse_modes:
-        return
-    __ellipse_mode = mode
-
+def point(x1, y1):
+    x1 = x1 + __x_offset
+    y1 = y1 + __y_offset
+    x2 = x1 + 1
+    y2 = y1 + 1
+    __canvas.create_line(x1, y1, x2, y2, fill=__stroke, width=__stroke_width)
 #
 #   MODULE FUNCTIONS
 #
